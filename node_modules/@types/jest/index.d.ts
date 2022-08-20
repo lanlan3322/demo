@@ -28,7 +28,7 @@
 //                 Alexandre Germain <https://github.com/gerkindev>
 //                 Adam Jones <https://github.com/domdomegg>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// Minimum TypeScript Version: 3.8
+// Minimum TypeScript Version: 4.3
 
 declare var beforeAll: jest.Lifecycle;
 declare var beforeEach: jest.Lifecycle;
@@ -264,7 +264,7 @@ declare namespace jest {
      * Runs failed tests n-times until they pass or until the max number of retries is exhausted.
      * This only works with jest-circus!
      */
-    function retryTimes(numRetries: number): typeof jest;
+    function retryTimes(numRetries: number, options?: { logErrorsBeforeRetry?: boolean }): typeof jest;
     /**
      * Exhausts tasks queued by setImmediate().
      * > Note: This function is only available when using modern fake timers
@@ -332,21 +332,26 @@ declare namespace jest {
      *   spy.mockRestore();
      * });
      */
-    function spyOn<T extends {}, M extends NonFunctionPropertyNames<Required<T>>>(
+    function spyOn<
+        T extends {},
+        Key extends keyof T,
+        A extends PropertyAccessors<Key, T> = PropertyAccessors<Key, T>,
+        Value extends Required<T>[Key] = Required<T>[Key],
+    >(
         object: T,
-        method: M,
-        accessType: 'get'
-    ): SpyInstance<Required<T>[M], []>;
-    function spyOn<T extends {}, M extends NonFunctionPropertyNames<Required<T>>>(
-        object: T,
-        method: M,
-        accessType: 'set'
-    ): SpyInstance<void, [Required<T>[M]]>;
+        method: Key,
+        accessType: A,
+    ):
+      A extends SetAccessor ? SpyInstance<void, [Value]>
+    : A extends GetAccessor ? SpyInstance<Value, []>
+    : Value extends Constructor ? SpyInstance<InstanceType<Value>, ConstructorArgsType<Value>>
+    : Value extends Func ? SpyInstance<ReturnType<Value>, ArgsType<Value>>
+    : never;
     function spyOn<T extends {}, M extends FunctionPropertyNames<Required<T>>>(
         object: T,
         method: M
-    ): Required<T>[M] extends (...args: any[]) => any
-        ? SpyInstance<ReturnType<Required<T>[M]>, ArgsType<Required<T>[M]>>
+    ): FunctionProperties<Required<T>>[M] extends Func
+        ? SpyInstance<ReturnType<FunctionProperties<Required<T>>[M]>, ArgsType<FunctionProperties<Required<T>>[M]>>
         : never;
     function spyOn<T extends {}, M extends ConstructorPropertyNames<Required<T>>>(
         object: T,
@@ -402,15 +407,19 @@ declare namespace jest {
     type MaybeMocked<T> = T extends MockableFunction ? MockedFn<T> : T extends object ? MockedObject<T> : T;
     type EmptyFunction = () => void;
     type ArgsType<T> = T extends (...args: infer A) => any ? A : never;
+    type Constructor = new (...args: any[]) => any;
+    type Func = (...args: any[]) => any;
     type ConstructorArgsType<T> = T extends new (...args: infer A) => any ? A : never;
     type RejectedValue<T> = T extends PromiseLike<any> ? any : never;
     type ResolvedValue<T> = T extends PromiseLike<infer U> ? U | T : never;
     // see https://github.com/Microsoft/TypeScript/issues/25215
-    type NonFunctionPropertyNames<T> = { [K in keyof T]: T[K] extends (...args: any[]) => any ? never : K }[keyof T] &
-        string;
-    type FunctionPropertyNames<T> = { [K in keyof T]: T[K] extends (...args: any[]) => any ? K : never }[keyof T] &
-        string;
-    type ConstructorPropertyNames<T> = { [K in keyof T]: T[K] extends new (...args: any[]) => any ? K : never }[keyof T] &
+    type NonFunctionPropertyNames<T> = keyof { [K in keyof T as T[K] extends Func ? never : K]: T[K]; };
+    type GetAccessor = 'get';
+    type SetAccessor = 'set';
+    type PropertyAccessors<M extends keyof T, T extends {}> = M extends NonFunctionPropertyNames<Required<T>> ? GetAccessor | SetAccessor : never;
+    type FunctionProperties<T> = { [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K] };
+    type FunctionPropertyNames<T> = keyof FunctionProperties<T>;
+    type ConstructorPropertyNames<T> = { [K in keyof T]: T[K] extends Constructor ? K : never }[keyof T] &
         string;
 
     interface DoneCallback {
@@ -461,6 +470,12 @@ declare namespace jest {
          * Only runs this test in the current file.
          */
         only: It;
+        /**
+         * Mark this test as expecting to fail.
+         *
+         * Only available in the default `jest-circus` runner.
+         */
+        failing: It;
         /**
          * Skips running this test in the current file.
          */
@@ -528,27 +543,21 @@ declare namespace jest {
 
     type EqualityTester = (a: any, b: any) => boolean | undefined;
 
-    interface MatcherUtils {
-        readonly isNot: boolean;
-        readonly dontThrow: () => void;
-        readonly promise: string;
-        readonly assertionCalls: number;
-        readonly expectedAssertionsNumber: number | null;
-        readonly isExpectingAssertions: boolean;
-        readonly suppressedErrors: any[];
-        readonly expand: boolean;
-        readonly testPath: string;
-        readonly currentTestName: string;
-        utils: typeof import('jest-matcher-utils') & {
-            iterableEquality: EqualityTester;
-            subsetEquality: EqualityTester;
-        };
-        /**
-         *  This is a deep-equality function that will return true if two objects have the same values (recursively).
-         */
-        equals(a: any, b: any, customTesters?: EqualityTester[], strictCheck?: boolean): boolean;
-        [other: string]: any;
-    }
+    type MatcherUtils = Pick<
+        import('expect').MatcherState,
+        | 'isNot'
+        | 'dontThrow'
+        | 'promise'
+        | 'assertionCalls'
+        | 'expectedAssertionsNumber'
+        | 'isExpectingAssertions'
+        | 'suppressedErrors'
+        | 'expand'
+        | 'testPath'
+        | 'currentTestName'
+        | 'utils'
+        | 'equals'
+    > & { [other: string]: any; };
 
     interface ExpectExtendMap {
         [key: string]: CustomMatcher;
@@ -604,15 +613,16 @@ declare namespace jest {
          */
         stringContaining(str: string): any;
     }
-    interface MatcherState {
-        assertionCalls: number;
-        currentTestName: string;
-        expand: boolean;
-        expectedAssertionsNumber: number;
-        isExpectingAssertions?: boolean | undefined;
-        suppressedErrors: Error[];
-        testPath: string;
-    }
+    type MatcherState = Pick<
+        import('expect').MatcherState,
+        | 'assertionCalls'
+        | 'currentTestName'
+        | 'expand'
+        | 'expectedAssertionsNumber'
+        | 'isExpectingAssertions'
+        | 'suppressedErrors'
+        | 'testPath'
+    >;
     /**
      * The `expect` function is used every time you want to test a value.
      * You will rarely call `expect` by itself.
@@ -671,6 +681,14 @@ declare namespace jest {
          * make sure that assertions in a callback actually got called.
          */
         assertions(num: number): void;
+        /**
+         * Useful when comparing floating point numbers in object properties or array item.
+         * If you need to compare a number, use `.toBeCloseTo` instead.
+         *
+         * The optional `numDigits` argument limits the number of digits to check after the decimal point.
+         * For the default value 2, the test criterion is `Math.abs(expected - received) < 0.005` (that is, `10 ** -2 / 2`).
+         */
+        closeTo(num: number, numDigits?: number): any;
         /**
          * Verifies that at least one assertion is called during a test.
          * This is often useful when testing asynchronous code, in order to
