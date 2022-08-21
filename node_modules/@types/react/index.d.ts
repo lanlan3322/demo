@@ -796,7 +796,7 @@ declare namespace React {
                 : P
             : P;
 
-    type PropsWithChildren<P> = P & { children?: ReactNode | undefined };
+    type PropsWithChildren<P = unknown> = P & { children?: ReactNode | undefined };
 
     /**
      * NOTE: prefer ComponentPropsWithRef, if the ref is forwarded,
@@ -2142,6 +2142,7 @@ declare namespace React {
         name?: string | undefined;
         noValidate?: boolean | undefined;
         target?: string | undefined;
+        rel?: string | undefined;
     }
 
     interface HtmlHTMLAttributes<T> extends HTMLAttributes<T> {
