@@ -5,6 +5,7 @@ This code is from the Tutorial [Build your own NFT Marketplace from Scratch](htt
 To deploy and verify smart contract:
 Add your ethscan api key in hardhat.config.js
       goerli: 'YOUR KEY'
+      
 Then run the following commands:
 ```bash
 npm install --save-dev @nomiclabs/hardhat-etherscan
