@@ -1,8 +1,8 @@
-const Marketplace =  require("../src/Marketplace.json");
+const HashedPersona =  require("../src/HashedPersona.json");
 async function getNFts () {
-const MyContract = await ethers.getContractFactory("NFTMarketplace");
+const MyContract = await ethers.getContractFactory("HashedPersona");
 const contract = await MyContract.attach(
-  Marketplace.address
+  HashedPersona.address
 );
 
 // Now you can call functions of the contract
@@ -13,7 +13,7 @@ console.log(vals);
 const signer = provider.getSigner();
 const addrsign = await signer.getAddress();
 
-let contract = new ethers.Contract(Marketplace.address, Marketplace.abi, signer)
+let contract = new ethers.Contract(HashedPersona.address, HashedPersona.abi, signer)
 let transaction = await contract.getAllNFTs()
 console.log(transaction);*/
 }

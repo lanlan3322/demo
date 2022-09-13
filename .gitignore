@@ -3,3 +3,8 @@ node_modules
 
 # production
 build
+artifacts
+cache
+
+# settings
+.env

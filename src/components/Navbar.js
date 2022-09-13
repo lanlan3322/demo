@@ -1,18 +1,13 @@
-import fullLogo from '../kleros-logo-fullwhite.png';
+import fullLogo from '../HashedPersonaDark.png';
 import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useRouteMatch,
-  useParams
+  Link
 } from "react-router-dom";
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 
 function Navbar() {
 
-const [connected, toggleConnect] = useState(false);
+//const [connected, toggleConnect] = useState(false);
 const location = useLocation();
 const [currAddress, updateAddress] = useState('0x');
 
@@ -38,7 +33,7 @@ async function connectWebsite() {
     const chainId = await window.ethereum.request({ method: 'eth_chainId' });
     if(chainId !== '0x5')
     {
-      //alert('Incorrect network! Switch your metamask network to Rinkeby');
+      //alert('Incorrect network! Switch your metamask network to Goerli');
       await window.ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: '0x5' }],
@@ -59,7 +54,7 @@ async function connectWebsite() {
     {
       console.log("here");
       getAddress();
-      toggleConnect(val);
+      //toggleConnect(val);
       updateButton();
     }
 
@@ -76,41 +71,50 @@ async function connectWebsite() {
             <Link to="/">
             <img src={fullLogo} alt="" width={120} height={120} className="inline-block -mt-2"/>
             <div className='inline-block font-bold text-xl ml-2'>
-              301NFT
+              HashedPersona
             </div>
             </Link>
           </li>
           <li className='w-2/6'>
-            <ul className='lg:flex justify-between font-bold mr-10 text-lg'>
+            <ul className='lg:flex justify-between font-bold text-lg'>
               {location.pathname === "/" ? 
               <li className='border-b-2 hover:pb-0 p-2'>
-                <Link to="/">Famous 301NFT</Link>
+                <Link to="/">All Collections</Link>
               </li>
               :
               <li className='hover:border-b-2 hover:pb-0 p-2'>
-                <Link to="/">Famous 301NFT</Link>
+                <Link to="/">All Collections</Link>
               </li>              
               }
-              {location.pathname === "/sellNFT" ? 
+              {location.pathname === "/HPnew" ? 
               <li className='border-b-2 hover:pb-0 p-2'>
-                <Link to="/sellNFT">Create 301NFT</Link>
+                <Link to="/HPnew">New Collection</Link>
               </li>
               :
               <li className='hover:border-b-2 hover:pb-0 p-2'>
-                <Link to="/sellNFT">Create 301NFT</Link>
+                <Link to="/HPnew">New Collection</Link>
               </li>              
               }              
-              {location.pathname === "/profile" ? 
+              {location.pathname === "/HPcollection" ? 
               <li className='border-b-2 hover:pb-0 p-2'>
-                <Link to="/profile">My 301NFTs</Link>
+                <Link to="/HPcollection">My Collection</Link>
               </li>
               :
               <li className='hover:border-b-2 hover:pb-0 p-2'>
-                <Link to="/profile">My 301NFTs</Link>
+                <Link to="/HPcollection">My Collection</Link>
+              </li>              
+              }  
+              {location.pathname === "/HPcards" ? 
+              <li className='border-b-2 hover:pb-0 p-2'>
+                <Link to="/HPcards">My HPCards</Link>
+              </li>
+              :
+              <li className='hover:border-b-2 hover:pb-0 p-2'>
+                <Link to="/HPcards">My HPCards</Link>
               </li>              
               }  
               <li>
-                <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={connectWebsite}>{connected? "Connected":"Connect Wallet"}</button>
+                <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded text-sm p-1" onClick={connectWebsite}></button>
               </li>
             </ul>
           </li>

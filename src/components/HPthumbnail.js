@@ -1,12 +1,10 @@
-import axie from "../tile.jpeg";
 import {
-    BrowserRouter as Router,
     Link,
   } from "react-router-dom";
 
-function NFTTile (data) {
+function HPthumbnail (data) {
     const newTo = {
-        pathname:"/nftPage/"+data.data.tokenId
+        pathname:"/HPdetails/"+data.data.tokenId
     }
     return (
         <Link to={newTo}>
@@ -17,16 +15,10 @@ function NFTTile (data) {
                 <p className="display-inline">
                     {data.data.description}
                 </p>
-                <p className="display-inline">
-                { data.data.currAddress === data.data.seller ?
-                    "You have followed this 301NFT"
-                    :  "You are not following this 301NFT"
-                }                    
-                </p>
            </div>
         </div>
         </Link>
     )
 }
 
-export default NFTTile;
+export default HPthumbnail;

@@ -1,9 +1,10 @@
 import './App.css';
 import Navbar from './components/Navbar.js';
-import Marketplace from './components/Marketplace';
-import Profile from './components/Profile';
-import SellNFT from './components/SellNFT';
-import NFTPage from './components/NFTpage';
+import HashedPersona from './components/HashedPersona';
+import HPcollection from './components/HPcollection';
+import HPCards from './components/HPcards';
+import HPnew from './components/HPnew';
+import HPdetails from './components/HPdetails';
 import ReactDOM from "react-dom/client";
 import {
   BrowserRouter,
@@ -15,10 +16,11 @@ function App() {
   return (
     <div className="container">
         <Routes>
-          <Route path="/" element={<Marketplace />}/>
-          <Route path="/nftPage" element={<NFTPage />}/>        
-          <Route path="/profile" element={<Profile />}/>
-          <Route path="/sellNFT" element={<SellNFT />}/>             
+          <Route path="/" element={<HashedPersona />}/>
+          <Route path="/HPdetails" element={<HPdetails />}/>        
+          <Route path="/HPcollection" element={<HPcollection />}/>
+          <Route path="/HPcards" element={<HPCards />}/>
+          <Route path="/HPnew" element={<HPnew />}/>             
         </Routes>
     </div>
   );

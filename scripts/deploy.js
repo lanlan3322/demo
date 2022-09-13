@@ -3,20 +3,20 @@ const hre = require("hardhat");
 const fs = require("fs");
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
-  const balance = await deployer.getBalance();
-  const Marketplace = await hre.ethers.getContractFactory("NFTMarketplace");
-  const marketplace = await Marketplace.deploy();
+  //const [deployer] = await ethers.getSigners();
+  //const balance = await deployer.getBalance();
+  const HashedPersona = await hre.ethers.getContractFactory("HashedPersona");
+  const HashedPersonaContract = await HashedPersona.deploy();
 
-  await marketplace.deployed();
+  await HashedPersonaContract.deployed();
 
   const data = {
-    address: marketplace.address,
-    abi: JSON.parse(marketplace.interface.format('json'))
+    address: HashedPersonaContract.address,
+    abi: JSON.parse(HashedPersonaContract.interface.format('json'))
   }
 
   //This writes the ABI and address to the mktplace.json
-  fs.writeFileSync('./src/Marketplace.json', JSON.stringify(data))
+  fs.writeFileSync('./src/HashedPersona.json', JSON.stringify(data))
 }
 
 main()

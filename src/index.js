@@ -1,27 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
 import {
   BrowserRouter,
   Routes,
   Route,
 } from "react-router-dom";
-import SellNFT from './components/SellNFT';
-import Marketplace from './components/Marketplace';
-import Profile from './components/Profile';
-import NFTPage from './components/NFTpage';
+import HPnew from './components/HPnew';
+import HashedPersona from './components/HashedPersona';
+import HPcollection from './components/HPcollection';
+import HPCards from './components/HPcards';
+import HPdetails from './components/HPdetails';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Marketplace />}/>
-        <Route path="/sellNFT" element={<SellNFT />}/> 
-        <Route path="/nftPage/:tokenId" element={<NFTPage />}/>        
-        <Route path="/profile" element={<Profile />}/> 
+        <Route path="/" element={<HashedPersona />}/>
+        <Route path="/HPnew" element={<HPnew />}/> 
+        <Route path="/HPdetails/:tokenId" element={<HPdetails />}/>        
+        <Route path="/HPcollection" element={<HPcollection />}/> 
+        <Route path="/HPcards" element={<HPCards />}/> 
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
