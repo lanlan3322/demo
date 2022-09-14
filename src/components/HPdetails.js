@@ -10,6 +10,7 @@ const [data, updateData] = useState({});
 const [dataFetched, updateDataFetched] = useState(false);
 const [message, updateMessage] = useState("");
 const [currAddress, updateCurrAddress] = useState("0x");
+const [collected, updateCollected] = useState(false);
 
 async function getNFTData(tokenId) {
     const ethers = require("ethers");
@@ -22,6 +23,8 @@ async function getNFTData(tokenId) {
     //create an NFT Token
     const tokenURI = await contract.tokenURI(tokenId);
     const listedToken = await contract.getListedTokenForId(tokenId);
+    const isCollected = await contract.isCollected(tokenId, addr);
+    updateCollected(isCollected);
     let meta = await axios.get(tokenURI);
     meta = meta.data;
     //console.log(listedToken);
@@ -193,7 +196,7 @@ async function unfollow(tokenId) {
                     </div>
                     <hr/>
                     <div>
-                        { currAddress !== data.owner?
+                        { currAddress !== data.owner && !collected ?
                             <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => follow(tokenId)}>Follow</button>
                             : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => unfollow(tokenId)}>Unfollow</button>
                         }                        
