@@ -62,7 +62,8 @@ async function follow(tokenId) {
         let transaction = await contract.collect(tokenId);
         await transaction.wait();
 
-        alert('You successfully followed the Hashed Persona!');
+        alert(transaction?'You successfully followed this Hashed Persona!':'You are trying to follow the same Hashed Persona more than once!');
+
         updateMessage("");
         window.location.replace("/")
     }
@@ -192,11 +193,10 @@ async function unfollow(tokenId) {
                     </div>
                     <hr/>
                     <div>
-                        { currAddress !== data.owner ?
+                        { currAddress !== data.owner?
                             <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => follow(tokenId)}>Follow</button>
                             : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => unfollow(tokenId)}>Unfollow</button>
-                        }
-                        
+                        }                        
                         <div className="text-green text-center mt-3">{message}</div>
                     </div>
                 </div>

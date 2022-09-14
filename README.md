@@ -10,7 +10,7 @@ Then run the following commands:
 ```bash
 npm install --save-dev @nomiclabs/hardhat-etherscan
 npx hardhat run --network goerli scripts/deploy.js
-npx hardhat verify --network goerli 0xFBbf74915Edd46Bd02601A5cb12EB10D8f63AeF0
+npx hardhat verify --network goerli 0x7514E3Cd9CF8556199464B007e6894C3E9FF0393
 ```
 To set up the repository and run the HashedPersona locally:
 ```bash

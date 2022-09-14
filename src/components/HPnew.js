@@ -16,6 +16,7 @@ export default function HPnew () {
         //check for file extension
         try {
             //upload the file to IPFS
+            console.log("Uploaded file to Pinata start: ")
             const response = await uploadFileToIPFS(file);
             if(response.success === true) {
                 console.log("Uploaded image to Pinata: ", response.pinataURL)

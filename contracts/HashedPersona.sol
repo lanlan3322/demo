@@ -270,10 +270,29 @@ contract HashedPersona is ERC721URIStorage {
         return items;
     }
 
-    function collect(uint256 tokenId) public payable {
-        //update the details of the token
-        uint256 collectionId = getCollectionIdFromTokenId(tokenId);
-        createToken(collectionId);
+    function isCollected(uint256 _tokenId, address _owner) public view returns (bool){
+        uint totalItemCount = _tokenIds.current();
+        for(uint i=0; i < totalItemCount; i++) {
+            if(idToListedToken[i+1].owner == _owner) {
+                uint currentId = i+1;
+                if(idToListedToken[currentId].collecitonId == idToListedToken[_tokenId].collecitonId){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function collect(uint256 tokenId) public payable returns (bool){
+        if(isCollected(tokenId, msg.sender)){
+            return false;
+        }
+        else{
+            //update the details of the token
+            uint256 collectionId = getCollectionIdFromTokenId(tokenId);
+            createToken(collectionId);
+            return true;
+        }
     }
 
     function setCollectionURI(string calldata newURI, uint256 collectionId) external onlyCreator {
