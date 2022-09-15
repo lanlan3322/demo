@@ -20,3 +20,6 @@ cd demo
 npm install
 npm start
 ```
+
+Testing:
+https://monumental-faloodeh-f4fcee.netlify.app/
