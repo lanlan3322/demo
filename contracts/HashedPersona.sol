@@ -79,17 +79,12 @@ contract HashedPersona is ERC721URIStorage {
         return listPrice;
     }
 
-    function getLatestIdToListedToken() public view returns (ListedToken memory) {
-        uint256 currentTokenId = _tokenIds.current();
-        return idToListedToken[currentTokenId];
-    }
-
     function getListedTokenForId(uint256 tokenId) public view returns (ListedToken memory) {
         return idToListedToken[tokenId];
     }
 
-    function getCurrentToken() public view returns (uint256) {
-        return _tokenIds.current();
+    function getCollectionForId(uint256 collectionId) public view returns (ListedCollection memory) {
+        return idToListedCollection[collectionId];
     }
 
     function setStatus(uint256 tokenId, uint256 newStatus) public {
@@ -107,6 +102,10 @@ contract HashedPersona is ERC721URIStorage {
 
     function getCollectionIdFromTokenId(uint256 tokenId) public view returns (uint256) {
         return idToListedToken[tokenId].collecitonId;
+    }
+
+    function getCollectedAmountFromTokenId(uint256 tokenId) public view returns (uint256) {
+        return idToListedCollection[idToListedToken[tokenId].collecitonId].numClaimed;
     }
 
     //The first time a token is created, a collection is created
@@ -131,7 +130,7 @@ contract HashedPersona is ERC721URIStorage {
             payable(msg.sender),
             collectionURI,
             amount,
-            0
+            1
         );
 
         //Helper function to update Global variables and emit an event
