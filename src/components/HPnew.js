@@ -31,12 +31,15 @@ export default function HPnew () {
     //This function uploads the metadata to IPDS
     async function uploadMetadataToIPFS() {
         const {name, description, amount, twitter, linkedin, email} = formParams;
-        //Make sure that none of the fields are empty
-        if( !name || !description || !amount || !fileURL || !twitter || !linkedin || !email)
-            return;
 
         const nftJSON = {
             name, description, amount, twitter, linkedin, email, image: fileURL
+        }
+        //Make sure that none of the fields are empty
+        if( !name || !description || !amount || !fileURL || !twitter || !linkedin || !email){
+            console.log("fileURL: ", fileURL);
+            console.log("nftJSON: ", nftJSON);
+            return;
         }
 
         try {
