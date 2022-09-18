@@ -123,7 +123,7 @@ async function unfollow(tokenId) {
                     <div>
                         { currAddress !== data.issuer ?
                             "You may collect this NFT"
-                            : "You may edit the information of this NFT"
+                            : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => unfollow(tokenId)}>Edit</button>
                         }
                         
                         <div className="text-green text-center mt-3">{message}</div>
