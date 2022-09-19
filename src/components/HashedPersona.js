@@ -31,14 +31,16 @@ async function getAllCollections() {
     //Pull the deployed contract instance
     let contract = new ethers.Contract(HashedPersonaJSON.address, HashedPersonaJSON.abi, signer)
     //create an NFT Token
-    let transaction = await contract.getAllCollections()
+    const transaction = await contract.getAllCollections()
 
     //Fetch all the details of every NFT from the contract and display
     const items = await Promise.all(transaction.map(async i => {
         const tokenURI = await contract.tokenURI(i.tokenId);
         let meta = await axios.get(tokenURI);
         meta = meta.data;
+        const collected = await contract.getCollectedAmountFromTokenId(i.tokenId);
 
+        //console.log(meta);
         //let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
         let item = {
             price: meta.price,
@@ -51,11 +53,13 @@ async function getAllCollections() {
             twitter: meta.twitter,
             linkedin: meta.linkedin,
             email: meta.email,
-            amount: i.amount,
+            total: meta.amount,
+            collected: collected,
             currAddress: addr,
         }
         return item;
     }))
+    //console.log("items.length",items.length);
 
     updateFetched(true);
     updateData(items);
@@ -72,9 +76,9 @@ return (
                 Hashed Persona Collections
             </div>
             <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
-                {data.map((value, index) => {
+                {data.length?data.map((value, index) => {
                     return <HPthumbnail data={value} key={index}></HPthumbnail>;
-                })}
+                }):<div className="md:text-xl font-bold text-white">No collection found</div>}
             </div>
         </div>            
     </div>

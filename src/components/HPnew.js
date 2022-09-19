@@ -31,10 +31,12 @@ export default function HPnew () {
     //This function uploads the metadata to IPDS
     async function uploadMetadataToIPFS() {
         const {name, description, amount, twitter, linkedin, email} = formParams;
+        console.log("formParams: ", formParams);
 
         const nftJSON = {
             name, description, amount, twitter, linkedin, email, image: fileURL
         }
+        console.log("nftJSON: ", nftJSON);
         //Make sure that none of the fields are empty
         if( !name || !description || !amount || !fileURL || !twitter || !linkedin || !email){
             console.log("fileURL: ", fileURL);
@@ -46,6 +48,7 @@ export default function HPnew () {
             console.log("Uploaded JSON to Pinata start: ", nftJSON)
             //upload the metadata JSON to IPFS
             const response = await uploadJSONToIPFS(nftJSON);
+            console.log("response: ", response);
             if(response.success === true){
                 console.log("Uploaded JSON to Pinata successful: ", response)
                 return response.pinataURL;
@@ -66,6 +69,7 @@ export default function HPnew () {
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
             updateMessage("Please wait.. uploading (up to 5 mins)")
+            document.getElementById("nftForm").style.display = "none";
 
             //Pull the deployed contract instance
             let contract = new ethers.Contract(HashedPersona.address, HashedPersona.abi, signer)
@@ -128,11 +132,11 @@ export default function HPnew () {
                     <input type={"file"} onChange={OnChangeFile}></input>
                 </div>
                 <br></br>
-                <div className="text-green text-center">{message}</div>
                 <button onClick={listNFT} className="font-bold mt-10 w-full bg-purple-500 text-white rounded p-2 shadow-lg">
                     Create Hashed Persona
                 </button>
             </form>
+            <div className="text-green text-center">{message}</div>
         </div>
         </div>
     )

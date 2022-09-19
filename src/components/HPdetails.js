@@ -27,7 +27,16 @@ async function getNFTData(tokenId) {
     updateCollected(isCollected);
     let meta = await axios.get(tokenURI);
     meta = meta.data;
+    let currentStatus = "Disabled";
     //console.log(listedToken);
+    switch(listedToken.tokenStatus){
+        case 1:
+            currentStatus = "Active";
+            break;
+        default:
+            currentStatus = "Disabled";
+            break;
+    }
 
     let item = {
         price: meta.price,
@@ -41,6 +50,7 @@ async function getNFTData(tokenId) {
         linkedin: meta.linkedin,
         email: meta.email,
         amount: listedToken.amount,
+        status: currentStatus,
    }
     //console.log(item);
     updateData(item);
@@ -84,6 +94,24 @@ async function unfollow(tokenId) {
         alert("Upload Error"+e)
     }
 }
+async function edit(tokenId) {
+    try {
+        alert('You successfully updated the Hashed Persona!');
+        updateMessage("");
+        window.location.replace("/")
+    }
+    catch(e) {
+        alert("Upload Error"+e)
+    }
+}
+async function toggleFeature() {
+    try {
+        alert('You successfully toggled feature for this Hashed Persona Card!');
+    }
+    catch(e) {
+        alert("Upload Error"+e)
+    }
+}
     const params = useParams();
     const tokenId = params.tokenId;
     if(!dataFetched)
@@ -120,12 +148,18 @@ async function unfollow(tokenId) {
                         Email: <span className="text-sm">{data.email}</span>
                     </p>
                     <hr/>
+                    <p className="display-inline">
+                        Status: <span className="text-sm">{data.status}</span>
+                    </p>
+                    <hr/>
                     <div>
                         { currAddress !== data.issuer ?
-                            "You may collect this NFT"
-                            : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => unfollow(tokenId)}>Edit</button>
+                            currAddress !== data.owner && !collected ?
+                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => follow(tokenId)}>Follow</button>
+                            : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => unfollow(tokenId)}>Unfollow</button>
+
+                            : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => edit(tokenId)}>Edit</button>
                         }
-                        
                         <div className="text-green text-center mt-3">{message}</div>
                     </div>
                 </div>
@@ -139,8 +173,9 @@ async function unfollow(tokenId) {
                         Description: {data.description}
                         </p>
                         <p className="display-inline">
-                        Level: <span className="">{data.price}</span>
+                        Level: <span className="">1</span>
                         </p>
+                        <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
                     </div>
                     <hr/>
                     <div>
@@ -152,8 +187,9 @@ async function unfollow(tokenId) {
                             Description: {data.description}
                             </p>
                             <p className="display-inline">
-                            Level: <span className="">{data.price}</span>
+                            Level: <span className="">2</span>
                             </p>
+                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
                     </div>
                     <hr/>
                     <div>
@@ -165,8 +201,9 @@ async function unfollow(tokenId) {
                             Description: {data.description}
                             </p>
                             <p className="display-inline">
-                            Level: <span className="">{data.price}</span>
+                            Level: <span className="">8</span>
                             </p>
+                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
                     </div>
                     <hr/>
                     <div>
@@ -178,8 +215,9 @@ async function unfollow(tokenId) {
                             Description: {data.description}
                             </p>
                             <p className="display-inline">
-                            Level: <span className="">{data.price}</span>
+                            Level: <span className="">10</span>
                             </p>
+                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
                     </div>
                     <hr/>
                     <div>
@@ -191,17 +229,11 @@ async function unfollow(tokenId) {
                             Description: {data.description}
                             </p>
                             <p className="display-inline">
-                            Level: <span className="">{data.price}</span>
+                            Level: <span className="">100</span>
                             </p>
+                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
                     </div>
                     <hr/>
-                    <div>
-                        { currAddress !== data.owner && !collected ?
-                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => follow(tokenId)}>Follow</button>
-                            : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => unfollow(tokenId)}>Unfollow</button>
-                        }                        
-                        <div className="text-green text-center mt-3">{message}</div>
-                    </div>
                 </div>
             </div>
         </div>

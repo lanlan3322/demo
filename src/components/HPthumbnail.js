@@ -15,6 +15,12 @@ function HPthumbnail (data) {
                 <p className="display-inline">
                     {data.data.description}
                 </p>
+                <p className="display-inline">
+                { data.data.owner === data.data.issuer ?
+                    data.data.collected+"/"+data.data.total+" have been collected!"
+                    :data.data.status
+                }
+                </p>
            </div>
         </div>
         </Link>

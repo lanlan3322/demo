@@ -31,11 +31,21 @@ export default function HPcards () {
         */
         
         const items = await Promise.all(transaction.map(async i => {
-            console.log("i.tokenId", i.tokenId)
+            //console.log("i.tokenId", i.tokenId)
             const tokenURI = await contract.tokenURI(i.tokenId);
             let meta = await axios.get(tokenURI);
             meta = meta.data;
-
+            const collected = await contract.getCollectedAmountFromTokenId(i.tokenId);
+            let currentStatus = "Disabled";
+            switch(i.tokenStatus){
+                case 1:
+                    currentStatus = "Active";
+                    break;
+                default:
+                    currentStatus = "Disabled";
+                    break;
+            }
+        
             //let price = ethers.utils.formatUnits(i.price.toString(), 'ether');
             let item = {
                 price: meta.price,
@@ -48,7 +58,9 @@ export default function HPcards () {
                 twitter: meta.twitter,
                 linkedin: meta.linkedin,
                 email: meta.email,
-                amount: i.amount,
+                status: currentStatus,
+                total: meta.amount,
+                collected: collected,
                 currAddress: addr,
             }
             //sumPrice += Number(price);
@@ -71,27 +83,19 @@ export default function HPcards () {
         <div className="profileClass" style={{"minHeight":"100vh"}}>
             <Navbar></Navbar>
             <div className="profileClass">
-            <div className="flex text-center flex-col mt-11 md:text-2xl text-white">
-                <div className="mb-5">
-                    <h2 className="font-bold">My Wallet Address</h2>  
-                    {addressConnected}
-                </div>
-            </div>
             <div className="flex flex-row text-center justify-center mt-10 md:text-2xl text-white">
                     <div className="ml-20">
-                        <h2 className="font-bold">My Hashed Persona Cards Total</h2>
-                        {data.length}
+                        <h2 className="font-bold">My Hashed Persona Cards: {data.length}</h2>
                     </div>
             </div>
-            <div className="flex flex-col text-center items-center mt-11 text-white">
-                <h2 className="font-bold">My Hashed Persona Cards</h2>
+            <div className="flex flex-row text-center justify-center mt-10 md:text-2xl text-white">
                 <div className="flex justify-center flex-wrap max-w-screen-xl">
                     {data.map((value, index) => {
                     return <HPthumbnail data={value} key={index}></HPthumbnail>;
                     })}
                 </div>
                 <div className="mt-10 text-xl">
-                    {data.length === 0 ? "Oops, No NFT data to display (Are you logged in?)":""}
+                    {data.length === 0 ? "Oops, No Hashed Persona Card to be displayed!":""}
                 </div>
             </div>
             </div>

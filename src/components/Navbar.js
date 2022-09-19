@@ -42,7 +42,6 @@ async function connectWebsite() {
     await window.ethereum.request({ method: 'eth_requestAccounts' })
       .then(() => {
         updateButton();
-        console.log("here");
         getAddress();
         window.location.replace(location.pathname)
       });
@@ -52,13 +51,13 @@ async function connectWebsite() {
     let val = window.ethereum.isConnected();
     if(val)
     {
-      console.log("here");
       getAddress();
       //toggleConnect(val);
       updateButton();
     }
 
-    window.ethereum.on('accountsChanged', function(accounts){
+    window.ethereum.on('accountsChanged', accounts => {
+      console.log("accountsChanged",currAddress);
       window.location.replace(location.pathname)
     })
   });
@@ -75,7 +74,7 @@ async function connectWebsite() {
             </div>
             </Link>
           </li>
-          <li className='w-2/6'>
+          <li className='w-full'>
             <ul className='lg:flex justify-between font-bold text-lg'>
               {location.pathname === "/" ? 
               <li className='border-b-2 hover:pb-0 p-2'>
@@ -88,11 +87,11 @@ async function connectWebsite() {
               }
               {location.pathname === "/HPnew" ? 
               <li className='border-b-2 hover:pb-0 p-2'>
-                <Link to="/HPnew">New Collection</Link>
+                <Link to="/HPnew">Add Collection</Link>
               </li>
               :
               <li className='hover:border-b-2 hover:pb-0 p-2'>
-                <Link to="/HPnew">New Collection</Link>
+                <Link to="/HPnew">Add Collection</Link>
               </li>              
               }              
               {location.pathname === "/HPcollection" ? 
@@ -121,7 +120,7 @@ async function connectWebsite() {
           </ul>
         </nav>
         <div className='text-white text-bold text-right mr-10 text-sm'>
-          {currAddress !== "0x" ? "Connected to":"Not Connected. Please login to view NFTs"} {currAddress !== "0x" ? (currAddress.substring(0,15)+'...'):""}
+          {currAddress !== "0x" ? "Connected to":"Not Connected. Please login to view NFTs"} {currAddress !== "0x" ? currAddress:""}
         </div>
       </div>
     );

@@ -29,7 +29,7 @@ contract HashedPersona is ERC721URIStorage {
         address payable owner;
         address payable issuer;
         uint256 tokenAmount;
-        uint256 tokenStatus; //0-all; 1-Active; 2-Pending; 3-Suspended; 4-Abandond
+        uint256 tokenStatus; //0-Abandoned; 1-Active; 2-Pending; 3-Suspended;
     }
 
     //the event emitted when a token is successfully listed

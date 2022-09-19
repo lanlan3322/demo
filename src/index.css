@@ -12,7 +12,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: url('./bg.jpeg');
-  background-size: 100% 120%;
+  background-size: cover;
   animation-duration: 3s;
   animation-timing-function: linear;
   animation-delay: 0s;
@@ -21,7 +21,6 @@ body {
   animation-fill-mode: none;
   animation-play-state: running;
   animation-name: gradientTransform;
-  background-repeat: no-repeat;
 }
 
 code {
