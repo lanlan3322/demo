@@ -106,7 +106,15 @@ async function edit(tokenId) {
 }
 async function toggleFeature() {
     try {
-        alert('You successfully toggled feature for this Hashed Persona Card!');
+        alert('You successfully removed feature for this Hashed Persona Card!');
+    }
+    catch(e) {
+        alert("Upload Error"+e)
+    }
+}
+async function addFeature(id) {
+    try {
+        alert('Issuer will add features for this Hashed Persona Card from Feature Store!');
     }
     catch(e) {
         alert("Upload Error"+e)
@@ -175,7 +183,12 @@ async function toggleFeature() {
                         <p className="display-inline">
                         Level: <span className="">1</span>
                         </p>
-                        <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
+                        <p className="display-inline">
+                        { currAddress !== data.issuer ?
+                                ""
+                                : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Remove</button>
+                            }
+                            </p>
                     </div>
                     <hr/>
                     <div>
@@ -189,7 +202,12 @@ async function toggleFeature() {
                             <p className="display-inline">
                             Level: <span className="">2</span>
                             </p>
-                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
+                            <p className="display-inline">
+                            { currAddress !== data.issuer ?
+                                ""
+                                : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Remove</button>
+                            }
+                            </p>
                     </div>
                     <hr/>
                     <div>
@@ -203,7 +221,12 @@ async function toggleFeature() {
                             <p className="display-inline">
                             Level: <span className="">8</span>
                             </p>
-                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
+                            <p className="display-inline">
+                            { currAddress !== data.issuer ?
+                                ""
+                                : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Remove</button>
+                            }
+                            </p>
                     </div>
                     <hr/>
                     <div>
@@ -217,7 +240,12 @@ async function toggleFeature() {
                             <p className="display-inline">
                             Level: <span className="">10</span>
                             </p>
-                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
+                            <p className="display-inline">
+                            { currAddress !== data.issuer ?
+                                ""
+                                : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Remove</button>
+                            }
+                            </p>
                     </div>
                     <hr/>
                     <div>
@@ -231,9 +259,20 @@ async function toggleFeature() {
                             <p className="display-inline">
                             Level: <span className="">100</span>
                             </p>
-                            <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Add</button>
+                            <p className="display-inline">
+                            { currAddress !== data.issuer ?
+                                ""
+                                : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => toggleFeature()}>Remove</button>
+                            }
+                            </p>
                     </div>
                     <hr/>
+                    <div>
+                        { currAddress !== data.issuer ?
+                            ""
+                            : <button className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm" onClick={() => addFeature(tokenId)}>Add more features</button>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
