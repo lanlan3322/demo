@@ -8,9 +8,10 @@ import {
   Route,
 } from "react-router-dom";
 import HPnew from './components/HPnew';
+import HPedit from './components/HPedit';
 import HashedPersona from './components/HashedPersona';
 import HPcollection from './components/HPcollection';
-import HPCards from './components/HPcards';
+import HPcards from './components/HPcards';
 import HPdetails from './components/HPdetails';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -22,7 +23,8 @@ root.render(
         <Route path="/HPnew" element={<HPnew />}/> 
         <Route path="/HPdetails/:tokenId" element={<HPdetails />}/>        
         <Route path="/HPcollection" element={<HPcollection />}/> 
-        <Route path="/HPcards" element={<HPCards />}/> 
+        <Route path="/HPcards" element={<HPcards />}/> 
+        <Route path="/HPedit/:tokenId" element={<HPedit />}/>             
       </Routes>
     </BrowserRouter>
   </React.StrictMode>

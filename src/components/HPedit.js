@@ -5,7 +5,7 @@ import axios from 'axios'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
-export default function HPdetails(props) {
+export default function HPedit(props) {
   const [data, updateData] = useState({})
   const [dataFetched, updateDataFetched] = useState(false)
   const [message, updateMessage] = useState('')
