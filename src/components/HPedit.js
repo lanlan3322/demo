@@ -3,14 +3,22 @@ import { useParams } from 'react-router-dom'
 import HashedPersonaJSON from '../HashedPersona.json'
 import axios from 'axios'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { uploadFileToIPFS, uploadJSONToIPFS } from '../pinata'
 
-export default function HPedit(props) {
+export default function HPedit() {
   const [data, updateData] = useState({})
   const [dataFetched, updateDataFetched] = useState(false)
   const [message, updateMessage] = useState('')
-  const [currAddress, updateCurrAddress] = useState('0x')
-  const [collected, updateCollected] = useState(false)
+  const [formParams, updateFormParams] = useState({
+    name: '',
+    description: '',
+    amount: '',
+    twitter: '',
+    linkedin: '',
+    email: '',
+  })
+  const [fileURL, setFileURL] = useState(null)
+  const ethers = require('ethers')
 
   async function getNFTData(tokenId) {
     const ethers = require('ethers')
@@ -26,10 +34,8 @@ export default function HPedit(props) {
     )
     //create an NFT Token
     const listedToken = await contract.getListedTokenForId(tokenId)
-    const isCollected = await contract.isCollected(tokenId, addr)
     const collectionId = await contract.getCollectionIdFromTokenId(tokenId)
     const listedCollection = await contract.getCollectionForId(collectionId)
-    updateCollected(isCollected)
     const tokenURI = listedCollection.collectionURI
     let meta = await axios.get(tokenURI)
     meta = meta.data
@@ -45,32 +51,98 @@ export default function HPedit(props) {
     }
 
     let item = {
-      price: meta.price,
-      tokenId: tokenId,
-      issuer: listedToken.issuer,
-      owner: listedToken.owner,
+      collectionId: collectionId,
+      issuer: listedCollection.issuer,
       image: meta.image,
       name: meta.name,
       description: meta.description,
       twitter: meta.twitter,
       linkedin: meta.linkedin,
       email: meta.email,
-      amount: listedToken.amount,
+      amount: listedCollection.maxSupply,
+      claimed: listedCollection.numClaimed,
       status: currentStatus,
     }
-    //console.log(item);
     updateData(item)
     updateDataFetched(true)
-    //console.log("address", addr)
-    updateCurrAddress(addr)
+    //console.log(item);
   }
 
-  async function follow(tokenId) {
+  const params = useParams()
+  const tokenId = params.tokenId
+  if (!dataFetched) getNFTData(tokenId)
+  console.log(data);
+
+  //This function uploads the NFT image to IPFS
+  async function OnChangeFile(e) {
+    var file = e.target.files[0]
+    //check for file extension
     try {
-      const ethers = require('ethers')
+      //upload the file to IPFS
+      console.log('Uploaded file to Pinata start: ')
+      const response = await uploadFileToIPFS(file)
+      if (response.success === true) {
+        console.log('Uploaded image to Pinata: ', response.pinataURL)
+        setFileURL(response.pinataURL)
+      }
+    } catch (e) {
+      console.log('Error during file upload', e)
+    }
+  }
+
+  //This function uploads the metadata to IPDS
+  async function uploadMetadataToIPFS() {
+    const { name, description, amount, twitter, linkedin, email } = formParams
+    //console.log('formParams: ', formParams)
+
+    const nftJSON = {
+      name,
+      description,
+      amount,
+      twitter,
+      linkedin,
+      email,
+      image: fileURL,
+    }
+    console.log('nftJSON: ', nftJSON)
+    //Make sure that none of the fields are empty
+    if (
+      !name ||
+      !description ||
+      !amount ||
+      !fileURL ||
+      !twitter ||
+      !linkedin ||
+      !email
+    ) {
+      console.log('nftJSON: ', nftJSON)
+      return
+    }
+
+    try {
+      console.log('Uploaded JSON to Pinata start: ', nftJSON)
+      //upload the metadata JSON to IPFS
+      const response = await uploadJSONToIPFS(nftJSON)
+      if (response.success === true) {
+        console.log('Uploaded JSON to Pinata successful: ', response)
+        return response.pinataURL
+      }
+    } catch (e) {
+      console.log('error uploading JSON metadata:', e)
+    }
+  }
+
+  async function listNFT(e) {
+    e.preventDefault()
+
+    //Upload data to IPFS
+    try {
+      const metadataURL = await uploadMetadataToIPFS()
       //After adding your Hardhat network to your metamask, this code will get providers and signers
       const provider = new ethers.providers.Web3Provider(window.ethereum)
       const signer = provider.getSigner()
+      updateMessage('Please wait.. uploading (up to 5 mins)')
+      document.getElementById('nftForm').style.display = 'none'
 
       //Pull the deployed contract instance
       let contract = new ethers.Contract(
@@ -78,246 +150,178 @@ export default function HPedit(props) {
         HashedPersonaJSON.abi,
         signer,
       )
-      //const salePrice = ethers.utils.parseUnits(data.price, 'ether')
-      updateMessage(
-        'Following the Hashed Persona... Please Wait (Up to 5 mins)',
-      )
-      //run the collect function
-      console.log('tokenId', tokenId)
-      let transaction = await contract.collect(tokenId)
+
+      //massage the params to be sent to the create NFT request
+      //const amount = ethers.utils.parseUnits(formParams.amount, 'ether')
+      //let listingPrice = await contract.getListPrice()
+      //listingPrice = listingPrice.toString()
+      //const amount = formParams.amount
+
+      //actually create the NFT
+      //console.log('metadataURL', metadataURL)
+      //console.log('amount', amount)
+      let transaction = await contract.setCollectionURI(metadataURL, data.collectionId)
       await transaction.wait()
 
-      alert(
-        transaction
-          ? 'You successfully followed this Hashed Persona!'
-          : 'You are trying to follow the same Hashed Persona more than once!',
-      )
-
+      alert('Successfully updated your NFT!')
       updateMessage('')
+      updateFormParams({
+        name: '',
+        description: '',
+        amount: '',
+        twitter: '',
+        linkedin: '',
+        email: '',
+      })
       window.location.replace('/')
     } catch (e) {
-      alert('Upload Error' + e)
+      alert('Upload error' + e)
     }
-  }
-  async function unfollow(tokenId) {
-    try {
-      alert('You successfully unfollowed the Hashed Persona!')
-      updateMessage('')
-      window.location.replace('/')
-    } catch (e) {
-      alert('Upload Error' + e)
-    }
-  }
-  async function edit(tokenId) {
-    try {
-      alert('You successfully updated the Hashed Persona!')
-      updateMessage('')
-      window.location.replace('/')
-    } catch (e) {
-      alert('Upload Error' + e)
-    }
-  }
-  async function toggleFeature() {
-    try {
-      alert('You successfully removed feature for this Hashed Persona Card!')
-    } catch (e) {
-      alert('Upload Error' + e)
-    }
-  }
-  async function addFeature(id) {
-    try {
-      alert(
-        'Issuer will add features for this Hashed Persona Card from Feature Store!',
-      )
-    } catch (e) {
-      alert('Upload Error' + e)
-    }
-  }
-  const params = useParams()
-  const tokenId = params.tokenId
-  if (!dataFetched) getNFTData(tokenId)
-  const newTo = {
-    pathname: '/HPedit/' + data.tokenId,
   }
 
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar></Navbar>
-      <div className="flex ml-20 mt-20">
-        <div className="text-xl ml-20 space-y-8 text-white shadow-2xl rounded-lg border-2 p-5">
+      <div className="flex flex-col place-items-center mt-10" id="nftForm">
+        <form className="bg-white shadow-md rounded px-8 pt-4 pb-8 mb-4">
+          <h3 className="text-center font-bold text-purple-500 mb-8">
+            Update your Hashed Persona
+          </h3>
           <img
             src={data.image}
             alt=""
-            className="w-72 h-80 rounded-lg object-cover"
+            className="w-20 rounded-lg object-cover place-items-center"
           />
-          <p className="display-inline">Name: {data.name}</p>
-          <p className="display-inline">Description: {data.description}</p>
-          <p className="display-inline">
-            Total: <span className="">{data.amount + ' ETH'}</span>
-          </p>
-          <p className="display-inline">
-            Issuer: <span className="text-sm">{data.issuer}</span>
-          </p>
-          <p className="display-inline">
-            Owner: <span className="text-sm">{data.owner}</span>
-          </p>
-          <p className="display-inline">
-            Twitter: <span className="">{data.twitter}</span>
-          </p>
-          <p className="display-inline">
-            LinkedIn: <span className="text-sm">{data.linkedin}</span>
-          </p>
-          <p className="display-inline">
-            Email: <span className="text-sm">{data.email}</span>
-          </p>
-          <hr />
-          <p className="display-inline">
-            Status: <span className="text-sm">{data.status}</span>
-          </p>
-          <hr />
-          <div>
-            {currAddress !== data.issuer ? (
-              currAddress !== data.owner && !collected ? (
-                <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                  onClick={() => follow(tokenId)}
-                >
-                  Follow
-                </button>
-              ) : (
-                <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                  onClick={() => unfollow(tokenId)}
-                >
-                  Unfollow
-                </button>
-              )
-            ) : (
-              <Link to={newTo}>Edit</Link>
-            )}
-            <div className="text-green text-center mt-3">{message}</div>
+          <div className="mb-4">
+            <label
+              className="block text-purple-500 text-sm font-bold mb-2"
+              htmlFor="name"
+            >
+              Your Hashed Persona Name
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="name"
+              type="text"
+              placeholder={data.name}
+              onChange={(e) =>
+                updateFormParams({ ...formParams, name: e.target.value })
+              }
+              value={formParams.name}
+            ></input>
           </div>
-        </div>
-        <div className="text-xl ml-20 space-y-8 text-white shadow-2xl rounded-lg border-2 p-5">
-          <div>
-            <strong className="text-xl">Features1</strong>
-            <p className="display-inline">Name: {data.name}</p>
-            <p className="display-inline">Description: {data.description}</p>
-            <p className="display-inline">
-              Level: <span className="">1</span>
-            </p>
-            <p className="display-inline">
-              {currAddress !== data.issuer ? (
-                ''
-              ) : (
-                <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                  onClick={() => toggleFeature()}
-                >
-                  Remove
-                </button>
-              )}
-            </p>
+          <div className="mb-6">
+            <label
+              className="block text-purple-500 text-sm font-bold mb-2"
+              htmlFor="description"
+            >
+              Your Hashed Persona Description
+            </label>
+            <textarea
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              cols="40"
+              rows="5"
+              id="description"
+              type="text"
+              placeholder={data.description}
+              value={formParams.description}
+              onChange={(e) =>
+                updateFormParams({ ...formParams, description: e.target.value })
+              }
+            ></textarea>
           </div>
-          <hr />
-          <div>
-            <strong className="text-xl">Features2</strong>
-            <p className="display-inline">Name: {data.name}</p>
-            <p className="display-inline">Description: {data.description}</p>
-            <p className="display-inline">
-              Level: <span className="">2</span>
-            </p>
-            <p className="display-inline">
-              {currAddress !== data.issuer ? (
-                ''
-              ) : (
-                <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                  onClick={() => toggleFeature()}
-                >
-                  Remove
-                </button>
-              )}
-            </p>
+          <div className="mb-4">
+            <label
+              className="block text-purple-500 text-sm font-bold mb-2"
+              htmlFor="twitter"
+            >
+              Twitter
+            </label>
+            <textarea
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="twitter"
+              type="text"
+              placeholder={data.twitter}
+              value={formParams.twitter}
+              onChange={(e) =>
+                updateFormParams({ ...formParams, twitter: e.target.value })
+              }
+            ></textarea>
           </div>
-          <hr />
-          <div>
-            <strong className="text-xl">Features3</strong>
-            <p className="display-inline">Name: {data.name}</p>
-            <p className="display-inline">Description: {data.description}</p>
-            <p className="display-inline">
-              Level: <span className="">8</span>
-            </p>
-            <p className="display-inline">
-              {currAddress !== data.issuer ? (
-                ''
-              ) : (
-                <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                  onClick={() => toggleFeature()}
-                >
-                  Remove
-                </button>
-              )}
-            </p>
+          <div className="mb-4">
+            <label
+              className="block text-purple-500 text-sm font-bold mb-2"
+              htmlFor="linkedin"
+            >
+              LinkedIn
+            </label>
+            <textarea
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="linkedin"
+              type="text"
+              placeholder={data.linkedin}
+              value={formParams.linkedin}
+              onChange={(e) =>
+                updateFormParams({ ...formParams, linkedin: e.target.value })
+              }
+            ></textarea>
           </div>
-          <hr />
-          <div>
-            <strong className="text-xl">Features4</strong>
-            <p className="display-inline">Name: {data.name}</p>
-            <p className="display-inline">Description: {data.description}</p>
-            <p className="display-inline">
-              Level: <span className="">10</span>
-            </p>
-            <p className="display-inline">
-              {currAddress !== data.issuer ? (
-                ''
-              ) : (
-                <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                  onClick={() => toggleFeature()}
-                >
-                  Remove
-                </button>
-              )}
-            </p>
+          <div className="mb-4">
+            <label
+              className="block text-purple-500 text-sm font-bold mb-2"
+              htmlFor="email"
+            >
+              Email
+            </label>
+            <textarea
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="email"
+              type="text"
+              placeholder={data.email}
+              value={formParams.email}
+              onChange={(e) =>
+                updateFormParams({ ...formParams, email: e.target.value })
+              }
+            ></textarea>
           </div>
-          <hr />
-          <div>
-            <strong className="text-xl">Features5</strong>
-            <p className="display-inline">Name: {data.name}</p>
-            <p className="display-inline">Description: {data.description}</p>
-            <p className="display-inline">
-              Level: <span className="">100</span>
-            </p>
-            <p className="display-inline">
-              {currAddress !== data.issuer ? (
-                ''
-              ) : (
-                <button
-                  className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                  onClick={() => toggleFeature()}
-                >
-                  Remove
-                </button>
-              )}
-            </p>
+          <div className="mb-6">
+            <label
+              className="block text-purple-500 text-sm font-bold mb-2"
+              htmlFor="amount"
+            >
+              Amount
+            </label>
+            <input
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              type="number"
+              placeholder={data.amount}
+              step="1"
+              value={formParams.amount}
+              onChange={(e) =>
+                updateFormParams({ ...formParams, amount: e.target.value })
+              }
+            ></input>
           </div>
-          <hr />
           <div>
-            {currAddress !== data.issuer ? (
-              ''
-            ) : (
-              <button
-                className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
-                onClick={() => addFeature(tokenId)}
-              >
-                Add more features
-              </button>
-            )}
+            <label
+              className="block text-purple-500 text-sm font-bold mb-2"
+              htmlFor="image"
+            >
+              Upload Image
+            </label>
+            <input type={'file'} onChange={OnChangeFile}></input>
           </div>
-        </div>
+          <br>
+          </br>
+          <button
+            onClick={listNFT}
+            className="font-bold mt-10 w-full bg-purple-500 text-white rounded p-2 shadow-lg"
+          >
+            Update Hashed Persona
+          </button>
+        </form>
       </div>
+      <div className="text-green text-center">{message}</div>
     </div>
   )
 }

@@ -33,21 +33,20 @@ export default function HPdetails(props) {
     const tokenURI = listedCollection.collectionURI
     let meta = await axios.get(tokenURI)
     meta = meta.data
-    let currentStatus = 'Disabled'
+    let currentStatus = 'Abandoned'
     //console.log(listedToken);
-    switch (listedToken.tokenStatus) {
+    switch (parseInt(listedToken.tokenStatus, 10)) {
       case 1:
         currentStatus = 'Active'
         break
       default:
-        currentStatus = 'Disabled'
+        currentStatus = 'Abandoned'
         break
     }
 
     let item = {
-      price: meta.price,
       tokenId: tokenId,
-      issuer: listedToken.issuer,
+      issuer: listedCollection.issuer,
       owner: listedToken.owner,
       image: meta.image,
       name: meta.name,
@@ -55,13 +54,12 @@ export default function HPdetails(props) {
       twitter: meta.twitter,
       linkedin: meta.linkedin,
       email: meta.email,
-      amount: listedToken.amount,
+      amount: parseInt(listedCollection.maxSupply, 10),
+      claimed: parseInt(listedCollection.numClaimed, 10),
       status: currentStatus,
     }
-    //console.log(item);
     updateData(item)
     updateDataFetched(true)
-    //console.log("address", addr)
     updateCurrAddress(addr)
   }
 
@@ -82,6 +80,7 @@ export default function HPdetails(props) {
       updateMessage(
         'Following the Hashed Persona... Please Wait (Up to 5 mins)',
       )
+      document.getElementById('nftForm').style.display = 'none'
       //run the collect function
       console.log('tokenId', tokenId)
       let transaction = await contract.collect(tokenId)
@@ -101,7 +100,31 @@ export default function HPdetails(props) {
   }
   async function unfollow(tokenId) {
     try {
-      alert('You successfully unfollowed the Hashed Persona!')
+      const ethers = require('ethers')
+      //After adding your Hardhat network to your metamask, this code will get providers and signers
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      const signer = provider.getSigner()
+
+      //Pull the deployed contract instance
+      let contract = new ethers.Contract(
+        HashedPersonaJSON.address,
+        HashedPersonaJSON.abi,
+        signer,
+      )
+      //const salePrice = ethers.utils.parseUnits(data.price, 'ether')
+      updateMessage(
+        'Disable the Hashed Persona Card... Please Wait (Up to 5 mins)',
+      )
+      document.getElementById('nftForm').style.display = 'none'
+      let transaction = await contract.setStatus(tokenId, 0)
+      await transaction.wait()
+
+      alert(
+        transaction
+          ? 'You successfully abandoned this Hashed Persona Card!'
+          : 'Failed to abandon Hashed Persona Card!',
+      )
+
       updateMessage('')
       window.location.replace('/')
     } catch (e) {
@@ -143,7 +166,7 @@ export default function HPdetails(props) {
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar></Navbar>
-      <div className="flex ml-20 mt-20">
+      <div className="flex ml-20 mt-20" id="nftForm">
         <div className="text-xl ml-20 space-y-8 text-white shadow-2xl rounded-lg border-2 p-5">
           <img
             src={data.image}
@@ -153,13 +176,10 @@ export default function HPdetails(props) {
           <p className="display-inline">Name: {data.name}</p>
           <p className="display-inline">Description: {data.description}</p>
           <p className="display-inline">
-            Total: <span className="">{data.amount + ' ETH'}</span>
+            Claimed: {data.claimed}  (Total: {data.amount})
           </p>
           <p className="display-inline">
             Issuer: <span className="text-sm">{data.issuer}</span>
-          </p>
-          <p className="display-inline">
-            Owner: <span className="text-sm">{data.owner}</span>
           </p>
           <p className="display-inline">
             Twitter: <span className="">{data.twitter}</span>
@@ -193,9 +213,8 @@ export default function HPdetails(props) {
                 </button>
               )
             ) : (
-              <Link to={newTo}>Edit</Link>
+              <Link to={newTo} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm">Edit this collection</Link>
             )}
-            <div className="text-green text-center mt-3">{message}</div>
           </div>
         </div>
         <div className="text-xl ml-20 space-y-8 text-white shadow-2xl rounded-lg border-2 p-5">
@@ -318,6 +337,7 @@ export default function HPdetails(props) {
           </div>
         </div>
       </div>
+      <div className="text-green text-center">{message}</div>
     </div>
   )
 }
